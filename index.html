@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life in Weeks</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #121212;
+            color: #E0E0E0;
+            font-family: 'Roboto', sans-serif;
+        }
+        #container {
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #header {
+            display: block;
+        }
+        #header h1 {
+            font-size: 1.5em;
+            margin-bottom: 0.5em;
+            color: #FFFFFF;
+        }
+        #header p {
+            font-size: 1em;
+            margin-bottom: 1em;
+            color: #AAAAAA;
+        }
+        #grid {
+            display: none;
+            grid-template-columns: repeat(52, 5px);
+            gap: 1px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        .cell {
+            width: 5px;
+            height: 5px;
+            background-color: #444;
+            border-radius: 1px;
+        }
+        .lived {
+            background-color: #927d5c;
+        }
+        #resetLink {
+            display: none;
+            margin-top: 20px;
+            color: #927d5c;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        input[type="date"], button {
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: none;
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input[type="date"] {
+            color: #000;
+        }
+        button {
+            background-color: #927d5c;
+            color: white;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="header">
+            <h1>Life in Weeks</h1>
+        </div>
+        <input type="date" id="dobInput">
+        <button id="submitButton">Enter</button>
+        <div id="grid"></div>
+        <div id="resetLink">×</div>
+    </div>
+
+    <script>
+        const dobInput = document.getElementById('dobInput');
+        const submitButton = document.getElementById('submitButton');
+        const grid = document.getElementById('grid');
+        const resetLink = document.getElementById('resetLink');
+        const header = document.getElementById('header');
+
+        function createGrid(weeksLived) {
+            grid.innerHTML = '';
+            for (let i = 0; i < 52 * 90; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                if (i < weeksLived) {
+                    cell.classList.add('lived');
+                }
+                grid.appendChild(cell);
+            }
+            grid.style.display = 'grid';
+        }
+
+        function calculateWeeksLived(dob) {
+            const now = new Date();
+            const birthDate = new Date(dob);
+            const diffInMs = now - birthDate;
+            const diffInWeeks = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 7));
+            return diffInWeeks;
+        }
+
+        function initialize() {
+            const storedDob = localStorage.getItem('dob');
+            if (storedDob) {
+                const weeksLived = calculateWeeksLived(storedDob);
+                createGrid(weeksLived);
+                submitButton.style.display = 'none';
+                dobInput.style.display = 'none';
+                resetLink.style.display = 'block';
+                header.style.display = 'none';
+            }
+        }
+
+        submitButton.addEventListener('click', () => {
+            const dob = dobInput.value;
+            if (dob) {
+                localStorage.setItem('dob', dob);
+                const weeksLived = calculateWeeksLived(dob);
+                createGrid(weeksLived);
+                submitButton.style.display = 'none';
+                dobInput.style.display = 'none';
+                resetLink.style.display = 'block';
+                header.style.display = 'none';
+            }
+        });
+
+        resetLink.addEventListener('click', () => {
+            localStorage.removeItem('dob');
+            grid.style.display = 'none';
+            submitButton.style.display = 'block';
+            dobInput.style.display = 'block';
+            resetLink.style.display = 'none';
+            header.style.display = 'block';
+        });
+
+        initialize();
+    </script>
+</body>
+</html>
