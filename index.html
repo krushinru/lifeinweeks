@@ -1,53 +1,595 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Life in Weeks</title>
-    <meta name="description" content="Enter your date of birth, to see your life in weeks. Based on the post by Tim Urban, from Wait by Why.">
-    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
-    <link rel="manifest" href="images/site.webmanifest">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Твоя жизнь в неделях</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://krushin.me/lifeinweeks/" />
-    <meta property="og:title" content="Infinite Tic Tac Toe" />
-    <meta property="og:description" content="Enter your date of birth, to see your life in weeks. Based on the post by Tim Urban, from Wait by Why." />
-    <meta property="og:image" content="https://krushin.me/lifeinweeks/images/og.png" />
+        :root {
+            --bg: #0a0a0a;
+            --fg: #fafafa;
+            --gray-1: #1a1a1a;
+            --gray-2: #2a2a2a;
+            --gray-3: #3a3a3a;
+            --gray-4: #8a8a8a;
+            --accent: #fafafa;
+        }
 
-    <link href="css/main.css" rel="stylesheet">
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 80px 24px;
+            min-height: 100vh;
+        }
+
+        /* Landing Screen */
+        .landing {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 24px;
+        }
+
+        .landing-content {
+            max-width: 480px;
+            width: 100%;
+        }
+
+        .landing h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 600;
+            letter-spacing: -0.04em;
+            line-height: 1.05;
+            margin-bottom: 80px;
+            text-align: center;
+        }
+
+        .date-picker-wrapper {
+            position: relative;
+        }
+
+        .date-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--gray-4);
+            font-weight: 500;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .date-display {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            font-weight: 300;
+            letter-spacing: -0.02em;
+            text-align: center;
+            color: var(--fg);
+            margin-bottom: 60px;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            user-select: none;
+        }
+
+        .date-display:hover {
+            color: var(--gray-4);
+        }
+
+        .date-display.empty {
+            color: var(--gray-3);
+        }
+
+        input[type="date"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .landing button {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            padding: 20px 0;
+            background: var(--fg);
+            color: var(--bg);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .landing button.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .landing button:hover {
+            opacity: 0.9;
+        }
+
+        .landing button:active {
+            transform: scale(0.98);
+        }
+
+        /* Main Content */
+        header {
+            margin-bottom: 80px;
+            border-bottom: 1px solid var(--gray-2);
+            padding-bottom: 40px;
+            display: none;
+        }
+
+        header.visible {
+            display: block;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 600;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            margin-bottom: 24px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: var(--gray-4);
+            font-weight: 300;
+            line-height: 1.7;
+            max-width: 540px;
+        }
+
+        .subtitle a {
+            color: var(--fg);
+            text-decoration: none;
+            border-bottom: 1px solid var(--gray-3);
+            transition: border-color 0.2s ease;
+        }
+
+        .subtitle a:hover {
+            border-bottom-color: var(--fg);
+        }
+
+        /* Grid Section */
+        .grid-section {
+            display: none;
+            margin-bottom: 80px;
+            padding-bottom: 80px;
+            border-bottom: 1px solid var(--gray-2);
+        }
+
+        .grid-section.visible {
+            display: block;
+        }
+
+        .grid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .grid-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+
+        .grid-meta {
+            font-size: 13px;
+            color: var(--gray-4);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(52, 1fr);
+            gap: 2px;
+            margin-bottom: 40px;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: var(--gray-1);
+            transition: background 0.15s ease;
+        }
+
+        .cell:hover {
+            background: var(--gray-2);
+        }
+
+        .cell.lived {
+            background: var(--fg);
+        }
+
+        .cell.lived:hover {
+            background: var(--gray-4);
+        }
+
+        .legend {
+            display: flex;
+            gap: 32px;
+            font-size: 13px;
+            color: var(--gray-4);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-box {
+            width: 14px;
+            height: 14px;
+        }
+
+        .legend-box.lived {
+            background: var(--fg);
+        }
+
+        .legend-box.future {
+            background: var(--gray-1);
+        }
+
+        /* Stats Section */
+        .stats {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 32px;
+            margin-bottom: 80px;
+        }
+
+        .stats.visible {
+            display: grid;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 36px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--gray-4);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 400;
+        }
+
+        /* Actions */
+        .actions {
+            text-align: center;
+            padding-top: 40px;
+            border-top: 1px solid var(--gray-2);
+            display: none;
+        }
+
+        .actions.visible {
+            display: block;
+        }
+
+        .reset {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: var(--gray-4);
+            text-decoration: none;
+            letter-spacing: 0.02em;
+            transition: color 0.2s ease;
+        }
+
+        .reset:hover {
+            color: var(--fg);
+        }
+
+        .main-content {
+            display: none;
+        }
+
+        .main-content.visible {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 60px 20px;
+            }
+
+            .landing h1 {
+                margin-bottom: 60px;
+            }
+
+            .date-display {
+                margin-bottom: 40px;
+                min-height: 60px;
+            }
+
+            header {
+                margin-bottom: 60px;
+                padding-bottom: 32px;
+            }
+
+            h1 {
+                margin-bottom: 20px;
+            }
+
+            .grid-section {
+                margin-bottom: 60px;
+                padding-bottom: 60px;
+            }
+
+            .stats {
+                margin-bottom: 60px;
+            }
+
+            .grid {
+                gap: 1px;
+            }
+
+            .legend {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .grid {
+                gap: 1px;
+            }
+
+            .date-display {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div id="container">
-        <div id="header">
-            <h1>Life in Weeks</h1>
-            <p>Based on the <a href="http://waitbutwhy.com/2014/05/life-weeks.html">post</a> by Tim Urban, from <a href="http://waitbutwhy.com/">Wait But Why</a></p>
+    <!-- Landing Screen -->
+    <div class="landing" id="landing">
+        <div class="landing-content">
+            <h1>Когда ты родился?</h1>
+            
+            <div class="date-picker-wrapper">
+                <div class="date-label">Дата рождения</div>
+                <div class="date-display empty" id="dateDisplay">––.––.––––</div>
+                <input type="date" id="dobInput">
+            </div>
+
+            <button id="submitButton">Продолжить</button>
         </div>
-        <input type="date" id="dobInput">
-        <button id="submitButton">Enter</button>
-        <div id="grid"></div>
-        <div id="resetLink">×</div>
     </div>
 
-    <script src="js/app.js"></script>
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-        m[i].l=1*new Date();
-        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-        (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-    
-        ym(97411239, "init", {
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true
+    <!-- Main Content -->
+    <div class="container main-content" id="mainContent">
+        <header id="header">
+            <h1>Твоя жизнь<br>в неделях</h1>
+            <p class="subtitle">
+                90 лет это 4680 недель. Каждая клетка ниже — одна неделя твоей жизни. 
+                Визуализация вдохновлена статьей <a href="https://waitbutwhy.com/2014/05/life-weeks.html" target="_blank">Тима Урбана</a>.
+            </p>
+        </header>
+
+        <section class="grid-section" id="gridSection">
+            <div class="grid-header">
+                <h2 class="grid-title">Календарь жизни</h2>
+                <span class="grid-meta">52 недели × 90 лет</span>
+            </div>
+            
+            <div class="grid" id="grid"></div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-box lived"></div>
+                    <span>Прожитые недели</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box future"></div>
+                    <span>Будущие недели</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats" id="stats"></section>
+
+        <div class="actions" id="actions">
+            <a href="#" class="reset" id="reset">Сбросить данные</a>
+        </div>
+    </div>
+
+    <script>
+        const landing = document.getElementById('landing');
+        const mainContent = document.getElementById('mainContent');
+        const dobInput = document.getElementById('dobInput');
+        const dateDisplay = document.getElementById('dateDisplay');
+        const submitButton = document.getElementById('submitButton');
+        const header = document.getElementById('header');
+        const statsSection = document.getElementById('stats');
+        const gridSection = document.getElementById('gridSection');
+        const grid = document.getElementById('grid');
+        const resetLink = document.getElementById('reset');
+        const actions = document.getElementById('actions');
+
+        // Format date for display
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+
+        // Date picker interaction
+        dateDisplay.addEventListener('click', () => {
+            dobInput.showPicker();
         });
+
+        dobInput.addEventListener('change', (e) => {
+            if (e.target.value) {
+                dateDisplay.textContent = formatDate(e.target.value);
+                dateDisplay.classList.remove('empty');
+                submitButton.classList.add('visible');
+            }
+        });
+
+        function calculateWeeksLived(dob) {
+            const now = new Date();
+            const birthDate = new Date(dob);
+            const diffMs = now - birthDate;
+            return Math.floor(diffMs / (1000 * 60 * 60 * 24 * 7));
+        }
+
+        function calculateAge(dob) {
+            const now = new Date();
+            const birthDate = new Date(dob);
+            let age = now.getFullYear() - birthDate.getFullYear();
+            const monthDiff = now.getMonth() - birthDate.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        function renderGrid(weeksLived) {
+            const totalWeeks = 52 * 90;
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < totalWeeks; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                if (i < weeksLived) {
+                    cell.classList.add('lived');
+                }
+                grid.appendChild(cell);
+            }
+        }
+
+        function renderStats(dob) {
+            const weeksLived = calculateWeeksLived(dob);
+            const totalWeeks = 52 * 90;
+            const age = calculateAge(dob);
+            const percentLived = ((weeksLived / totalWeeks) * 100).toFixed(1);
+
+            statsSection.innerHTML = `
+                <div class="stat">
+                    <div class="stat-value">${age}</div>
+                    <div class="stat-label">Лет прожито</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">${weeksLived.toLocaleString('ru-RU')}</div>
+                    <div class="stat-label">Недель прошло</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">${(totalWeeks - weeksLived).toLocaleString('ru-RU')}</div>
+                    <div class="stat-label">Недель осталось</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">${percentLived}%</div>
+                    <div class="stat-label">Путь пройден</div>
+                </div>
+            `;
+        }
+
+        function showVisualization(dob) {
+            const weeksLived = calculateWeeksLived(dob);
+            
+            renderGrid(weeksLived);
+            renderStats(dob);
+            
+            landing.style.display = 'none';
+            mainContent.classList.add('visible');
+            header.classList.add('visible');
+            gridSection.classList.add('visible');
+            statsSection.classList.add('visible');
+            actions.classList.add('visible');
+        }
+
+        function hideVisualization() {
+            landing.style.display = 'flex';
+            mainContent.classList.remove('visible');
+            header.classList.remove('visible');
+            gridSection.classList.remove('visible');
+            statsSection.classList.remove('visible');
+            actions.classList.remove('visible');
+            
+            dobInput.value = '';
+            dateDisplay.textContent = '––.––.––––';
+            dateDisplay.classList.add('empty');
+            submitButton.classList.remove('visible');
+        }
+
+        function init() {
+            const storedDob = localStorage.getItem('dob');
+            if (storedDob) {
+                showVisualization(storedDob);
+            }
+        }
+
+        submitButton.addEventListener('click', () => {
+            const dob = dobInput.value;
+            if (dob) {
+                localStorage.setItem('dob', dob);
+                showVisualization(dob);
+            }
+        });
+
+        dobInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && dobInput.value) {
+                submitButton.click();
+            }
+        });
+
+        resetLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('dob');
+            hideVisualization();
+        });
+
+        init();
     </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/97411239" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
 </body>
 </html>
+
