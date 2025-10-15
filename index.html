@@ -51,7 +51,7 @@
         }
 
         .landing-content {
-            max-width: 480px;
+            max-width: 520px;
             width: 100%;
         }
 
@@ -75,39 +75,77 @@
             letter-spacing: 0.12em;
             color: var(--gray-4);
             font-weight: 500;
-            margin-bottom: 20px;
+            margin-bottom: 32px;
             text-align: center;
         }
 
-        .date-display {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: clamp(2rem, 6vw, 3.5rem);
-            font-weight: 300;
-            letter-spacing: -0.02em;
-            text-align: center;
-            color: var(--fg);
+        .date-selects {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1.2fr;
+            gap: 16px;
             margin-bottom: 60px;
-            min-height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: color 0.2s ease;
-            user-select: none;
         }
 
-        .date-display:hover {
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
             color: var(--gray-4);
+            font-weight: 500;
+            margin-bottom: 12px;
+            display: block;
         }
 
-        .date-display.empty {
-            color: var(--gray-3);
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(1.2rem, 3vw, 1.6rem);
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            padding: 16px 0;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--gray-2);
+            color: var(--fg);
+            outline: none;
+            transition: border-color 0.2s ease;
+            width: 100%;
+            cursor: pointer;
         }
 
-        input[type="date"] {
+        select:focus {
+            border-bottom-color: var(--fg);
+        }
+
+        select option {
+            background: var(--bg);
+            color: var(--fg);
+            font-size: 16px;
+            padding: 12px;
+        }
+
+        .select-wrapper::after {
+            content: '';
             position: absolute;
-            opacity: 0;
+            right: 0;
+            bottom: 20px;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid var(--gray-4);
             pointer-events: none;
+            transition: transform 0.2s ease;
+        }
+
+        select:focus + .select-wrapper::after {
+            transform: rotate(180deg);
         }
 
         .landing button {
@@ -342,9 +380,18 @@
                 margin-bottom: 60px;
             }
 
-            .date-display {
+            .date-selects {
+                gap: 12px;
                 margin-bottom: 40px;
-                min-height: 60px;
+            }
+
+            select {
+                font-size: 1.2rem;
+                padding: 12px 0;
+            }
+
+            .select-wrapper::after {
+                bottom: 16px;
             }
 
             header {
@@ -380,8 +427,13 @@
                 gap: 1px;
             }
 
-            .date-display {
-                font-size: 2rem;
+            .date-selects {
+                grid-template-columns: 80px 1fr 100px;
+                gap: 10px;
+            }
+
+            select {
+                font-size: 1rem;
             }
         }
     </style>
@@ -389,13 +441,44 @@
 <body>
     <!-- Landing Screen -->
     <div class="landing" id="landing">
-        <div class="landing-content">
-            <h1>Когда ты родился?</h1>
-            
+        <div class="landing-content">            
             <div class="date-picker-wrapper">
                 <div class="date-label">Дата рождения</div>
-                <div class="date-display empty" id="dateDisplay">––.––.––––</div>
-                <input type="date" id="dobInput">
+                
+                <div class="date-selects">
+                    <div class="select-wrapper">
+                        <label class="select-label">День</label>
+                        <select id="daySelect">
+                            <option value="" disabled selected>––</option>
+                        </select>
+                    </div>
+                    
+                    <div class="select-wrapper">
+                        <label class="select-label">Месяц</label>
+                        <select id="monthSelect">
+                            <option value="" disabled selected>––––––</option>
+                            <option value="1">Январь</option>
+                            <option value="2">Февраль</option>
+                            <option value="3">Март</option>
+                            <option value="4">Апрель</option>
+                            <option value="5">Май</option>
+                            <option value="6">Июнь</option>
+                            <option value="7">Июль</option>
+                            <option value="8">Август</option>
+                            <option value="9">Сентябрь</option>
+                            <option value="10">Октябрь</option>
+                            <option value="11">Ноябрь</option>
+                            <option value="12">Декабрь</option>
+                        </select>
+                    </div>
+                    
+                    <div class="select-wrapper">
+                        <label class="select-label">Год</label>
+                        <select id="yearSelect">
+                            <option value="" disabled selected>––––</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
             <button id="submitButton">Продолжить</button>
@@ -442,8 +525,9 @@
     <script>
         const landing = document.getElementById('landing');
         const mainContent = document.getElementById('mainContent');
-        const dobInput = document.getElementById('dobInput');
-        const dateDisplay = document.getElementById('dateDisplay');
+        const daySelect = document.getElementById('daySelect');
+        const monthSelect = document.getElementById('monthSelect');
+        const yearSelect = document.getElementById('yearSelect');
         const submitButton = document.getElementById('submitButton');
         const header = document.getElementById('header');
         const statsSection = document.getElementById('stats');
@@ -452,27 +536,42 @@
         const resetLink = document.getElementById('reset');
         const actions = document.getElementById('actions');
 
-        // Format date for display
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}.${month}.${year}`;
+        // Populate days (1-31)
+        for (let i = 1; i <= 31; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            daySelect.appendChild(option);
         }
 
-        // Date picker interaction
-        dateDisplay.addEventListener('click', () => {
-            dobInput.showPicker();
-        });
+        // Populate years (1920 - current year)
+        const currentYear = new Date().getFullYear();
+        for (let i = currentYear; i >= 1920; i--) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            yearSelect.appendChild(option);
+        }
 
-        dobInput.addEventListener('change', (e) => {
-            if (e.target.value) {
-                dateDisplay.textContent = formatDate(e.target.value);
-                dateDisplay.classList.remove('empty');
+        // Check if all selects have values
+        function checkFormComplete() {
+            if (daySelect.value && monthSelect.value && yearSelect.value) {
                 submitButton.classList.add('visible');
+            } else {
+                submitButton.classList.remove('visible');
             }
-        });
+        }
+
+        daySelect.addEventListener('change', checkFormComplete);
+        monthSelect.addEventListener('change', checkFormComplete);
+        yearSelect.addEventListener('change', checkFormComplete);
+
+        function getDateString() {
+            const day = daySelect.value.padStart(2, '0');
+            const month = monthSelect.value.padStart(2, '0');
+            const year = yearSelect.value;
+            return `${year}-${month}-${day}`;
+        }
 
         function calculateWeeksLived(dob) {
             const now = new Date();
@@ -528,7 +627,7 @@
                 </div>
                 <div class="stat">
                     <div class="stat-value">${percentLived}%</div>
-                    <div class="stat-label">Путь пройден</div>
+                    <div class="stat-label">Путь пройдено</div>
                 </div>
             `;
         }
@@ -555,9 +654,9 @@
             statsSection.classList.remove('visible');
             actions.classList.remove('visible');
             
-            dobInput.value = '';
-            dateDisplay.textContent = '––.––.––––';
-            dateDisplay.classList.add('empty');
+            daySelect.value = '';
+            monthSelect.value = '';
+            yearSelect.value = '';
             submitButton.classList.remove('visible');
         }
 
@@ -569,16 +668,10 @@
         }
 
         submitButton.addEventListener('click', () => {
-            const dob = dobInput.value;
-            if (dob) {
+            const dob = getDateString();
+            if (daySelect.value && monthSelect.value && yearSelect.value) {
                 localStorage.setItem('dob', dob);
                 showVisualization(dob);
-            }
-        });
-
-        dobInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && dobInput.value) {
-                submitButton.click();
             }
         });
 
@@ -592,4 +685,3 @@
     </script>
 </body>
 </html>
-
